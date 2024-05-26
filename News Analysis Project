@@ -1,0 +1,49 @@
+import pandas as pd
+df= pd.read_excel('/content/Assignment-1.xlsx')
+print(df)
+import re
+from textblob import TextBlob
+from collections import Counter
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+
+
+articles = df['Article'].tolist()
+def clean_article(article):
+    article = re.sub(r'[^\w\s]', '', article)
+    words = article.lower().split()
+    cleaned_words = [word for word in words if word not in ENGLISH_STOP_WORDS]
+    return ' '.join(cleaned_words)
+
+cleaned_articles = [clean_article(article) for article in articles]
+
+def check_mood(article):
+    analysis = TextBlob(article)
+    if analysis.sentiment.polarity > 0:
+        return "Positive"
+    elif analysis.sentiment.polarity < 0:
+        return "Negative"
+    else:
+        return "Neutral"
+
+mood_ratings = [check_mood(article) for article in articles]
+
+
+def find_connections(articles):
+    all_words = ' '.join(articles).split()
+    common_themes = Counter(all_words).most_common(10)
+    return common_themes
+
+common_themes = find_connections(cleaned_articles)
+
+
+print("Cleaned Articles:")
+for i, article in enumerate(cleaned_articles):
+    print(f"Article {i+1}: {article}")
+
+print("\nMood Ratings:")
+for i, mood in enumerate(mood_ratings):
+    print(f"Article {i+1}: {mood}")
+
+print("\nCommon Themes:")
+for theme, count in common_themes:
+    print(f"{theme}: {count}")
